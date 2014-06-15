@@ -8,5 +8,5 @@ As far as I know, this supports all the roms that exist in the wild. It's curren
 It should be easy to extract the core code and Chip8Emulator.cs if you're interested in changing the windowing/rendering system.
 
 Resources I used to develop this:
-[Wikipedia](http://en.wikipedia.org/wiki/Chip8)
-[Mastering CHIP-8](http://mattmik.com/chip8.html)
+* [Wikipedia](http://en.wikipedia.org/wiki/Chip8)
+* [Mastering CHIP-8](http://mattmik.com/chip8.html)
