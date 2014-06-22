@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿using Chip8WPF.Chip8System;
+using Microsoft.Win32;
 using System;
 using System.Threading;
 using System.Windows;
@@ -10,27 +11,31 @@ namespace Chip8WPF
 {
     public partial class MainWindow : Window
     {
+        // Used for loading roms and loading save states
+        private delegate void LoadMethod(string filename);
+
         private const int renderWidth = 64;
         private const int renderHeight = 32;
         private readonly Int32Rect renderRectangle;
-        
+
         private Chip8Emulator emulator;
         private Thread emulatorThread;
-        private WriteableBitmap renderFrame;        
+        private WriteableBitmap renderFrame;
 
         public MainWindow()
         {
-            InitializeComponent();
+            InitializeComponent();            
 
             emulator = new Chip8Emulator();
             emulator.RenderHandler += emulator_Render;
-            
-            renderFrame = new WriteableBitmap(renderWidth, renderHeight, 
+            DataContext = emulator;
+
+            renderFrame = new WriteableBitmap(renderWidth, renderHeight,
                 96, 96, PixelFormats.Gray8, null);
             renderedImage.Source = renderFrame;
             // To be used for writing a new frame to renderFrame
             renderRectangle = new Int32Rect(0, 0, renderWidth, renderHeight);
-        }                
+        }
 
         private void StopEmulation()
         {
@@ -52,6 +57,28 @@ namespace Chip8WPF
             renderFrame.WritePixels(renderRectangle, screenData, renderWidth, 0);
         }
 
+        private void LoadFile(LoadMethod loadMethod, string filter = "All Files|*.*")
+        {
+            OpenFileDialog dialog = new OpenFileDialog();
+            dialog.Filter = filter;
+            bool? fileChosen = dialog.ShowDialog();
+
+            if (fileChosen == true)
+            {
+                try
+                {
+                    StopEmulation();
+                    loadMethod(dialog.FileName);
+                    StartEmulation();
+                }
+                catch (SystemException ex)
+                {
+                    MessageBox.Show(ex.Message, "Failed to Load File",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
         private void emulator_Render(byte[] screenData)
         {
             // The emulator thread cannot access the render frame, hence the
@@ -70,32 +97,14 @@ namespace Chip8WPF
         }
 
         private void FileExit_Click(object sender, RoutedEventArgs e)
-        {            
+        {
             Close();
         }
 
         private void LoadRom_Click(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog dialog = new OpenFileDialog();
-            bool? fileChosen = dialog.ShowDialog();
-
-            if (fileChosen == true)
-            {
-                StopEmulation();
-
-                try
-                {
-                    emulator.LoadRom(dialog.FileName);
-                }
-                catch (SystemException ex)
-                {
-                    MessageBox.Show(ex.Message, "Failed to Open File",
-                        MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-                                
-                StartEmulation();
-            }
-        }        
+            LoadFile(emulator.LoadRom);
+        }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
@@ -103,6 +112,19 @@ namespace Chip8WPF
             // render event calls on this window after it has been destroyed,
             // which would result in a NullReferenceException.
             StopEmulation();
+        }
+
+        private void menu_save_Click(object sender, RoutedEventArgs e)
+        {
+            if (emulatorThread != null && emulatorThread.IsAlive)
+            {
+                emulator.SaveState();
+            }            
+        }
+
+        private void menu_loadState_Click(object sender, RoutedEventArgs e)
+        {
+            LoadFile(emulator.LoadState, "Save States|*.sav*");
         }
     }
 }

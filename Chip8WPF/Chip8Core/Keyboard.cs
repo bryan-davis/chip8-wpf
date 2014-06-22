@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Windows.Input;
 
 namespace Chip8WPF.Chip8Core
 {
+    [Serializable]
     class Keyboard
     {
         /*

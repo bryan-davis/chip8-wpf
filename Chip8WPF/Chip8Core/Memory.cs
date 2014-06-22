@@ -2,6 +2,7 @@
 
 namespace Chip8WPF.Chip8Core
 {
+    [Serializable]
     class Memory
     {
         // http://mattmik.com/chip8.html contains information regarding fonts

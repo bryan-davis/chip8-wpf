@@ -5,6 +5,7 @@ using System.Media;
 
 namespace Chip8WPF.Chip8Core
 {
+    [Serializable]
     class CPU
     {
         private const int screenWidth = 64;
@@ -16,7 +17,7 @@ namespace Chip8WPF.Chip8Core
         private ushort instructionAddress;
         private ushort programCounter;
         private byte delayTimer;
-        private byte soundTimer;     
+        private byte soundTimer;
         private Stack<ushort> stack;
         private SoundPlayer sound;
 
@@ -47,7 +48,7 @@ namespace Chip8WPF.Chip8Core
         public void LoadRom(string romPath)
         {
             ResetCPU();
-            using (FileStream fileStream = File.OpenRead(romPath))
+            using (Stream fileStream = File.OpenRead(romPath))
             {
                 fileStream.Read(memory.Bytes, baseAddress, (int)fileStream.Length);
             }
@@ -72,10 +73,8 @@ namespace Chip8WPF.Chip8Core
             }            
         }
 
-        public void ExecuteNextOpCode()
+        public void ExecuteNextOpCode(ushort opCode)
         {
-            ushort opCode = ReadNextOpCode();
-
             switch (opCode & 0xF000)
             {
                 case 0x0000: ExecuteOpCode0000(opCode);
@@ -115,7 +114,7 @@ namespace Chip8WPF.Chip8Core
             }
         }
 
-        private ushort ReadNextOpCode()
+        public ushort ReadNextOpCode()
         {            
             ushort opCode = memory[programCounter];
             opCode <<= 8;
