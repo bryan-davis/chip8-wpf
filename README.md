@@ -7,11 +7,11 @@ It's currently pretty basic, but it does support save states and should run all 
 
 It should be easy to extract the core code and Chip8Emulator.cs if you're interested in changing the windowing/rendering system.
 
-![Alt text](/screenshots/brix.png, "BRIX")
+![Alt text](/screenshots/brix.png "BRIX")
 
-![Alt text](/screenshots/pong2.png, "PONG2")
+![Alt text](/screenshots/pong.png "PONG2")
 
-![Alt text](/screenshots/tetris.png, "TETRIS")
+![Alt text](/screenshots/tetris.png "TETRIS")
 
 Resources I used to develop this:
 * [Wikipedia](http://en.wikipedia.org/wiki/Chip8)
