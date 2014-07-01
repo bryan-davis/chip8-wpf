@@ -5,6 +5,8 @@ VisualStudioVersion = 12.0.30501.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chip8WPF", "Chip8WPF\Chip8WPF.csproj", "{51C22415-5FD5-4FC2-AF5A-3894D5249D5D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chip8Tests", "Chip8Tests\Chip8Tests.csproj", "{BAD9DD84-A1C8-404F-AF45-492483C60FD0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{51C22415-5FD5-4FC2-AF5A-3894D5249D5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{51C22415-5FD5-4FC2-AF5A-3894D5249D5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{51C22415-5FD5-4FC2-AF5A-3894D5249D5D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BAD9DD84-A1C8-404F-AF45-492483C60FD0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BAD9DD84-A1C8-404F-AF45-492483C60FD0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BAD9DD84-A1C8-404F-AF45-492483C60FD0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BAD9DD84-A1C8-404F-AF45-492483C60FD0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

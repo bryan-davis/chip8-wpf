@@ -5,7 +5,7 @@ using System.Windows.Input;
 namespace Chip8WPF.Chip8Core
 {
     [Serializable]
-    class Keyboard
+    public class Keyboard
     {
         /*
            Keyboard       Chip8 Keypad   
@@ -40,11 +40,12 @@ namespace Chip8WPF.Chip8Core
         };
         
         private bool[] keyState;
+        private const int keyCount = 16;
 
         public Keyboard()
         {
             // Input is done with a "hex" keyboard that has 16 keys which range from 0 to F.
-            keyState = new bool[16];
+            keyState = new bool[keyCount];
         }
 
         public int GetAnyKey()
@@ -80,7 +81,7 @@ namespace Chip8WPF.Chip8Core
 
         public bool IsKeyPressed(int key)
         {
-            return keyState[key];
+            return (key >= 0 && key < keyCount) ? keyState[key] : false;
         }
     }
 }

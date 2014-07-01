@@ -6,23 +6,23 @@ using System.Media;
 namespace Chip8WPF.Chip8Core
 {
     [Serializable]
-    class CPU
+    public class CPU
     {
         private const int screenWidth = 64;
         private const int screenHeight = 32;
         private const int baseAddress = 0x200;
 
-        private Memory memory;
-        private byte[] registers;
-        private ushort instructionAddress;
-        private ushort programCounter;
-        private byte delayTimer;
-        private byte soundTimer;
-        private Stack<ushort> stack;
         private SoundPlayer sound;
 
-        public Keyboard Keyboard { get; private set; }
-        public byte[] ScreenData { get; private set; }        
+        public Memory Memory { get; set; }
+        public byte[] Registers { get; set; }
+        public ushort InstructionAddress { get; set; }
+        public ushort ProgramCounter { get; set; }
+        public byte DelayTimer { get; set; }
+        public byte SoundTimer { get; set; }
+        public Stack<ushort> Stack { get; set; }
+        public Keyboard Keyboard { get; set; }
+        public byte[] ScreenData { get; set; }        
         
         public CPU()
         {            
@@ -33,13 +33,13 @@ namespace Chip8WPF.Chip8Core
         {
             // The initial values for these are based off the wikipedia page for Chip8
             // http://en.wikipedia.org/wiki/Chip8#Virtual_machine_description
-            memory = new Memory();
-            registers = new byte[16];
-            instructionAddress = 0;
-            programCounter = baseAddress;
-            stack = new Stack<ushort>();
-            delayTimer = 0;
-            soundTimer = 0;
+            Memory = new Memory();
+            Registers = new byte[16];
+            InstructionAddress = 0;
+            ProgramCounter = baseAddress;
+            Stack = new Stack<ushort>();
+            DelayTimer = 0;
+            SoundTimer = 0;
             Keyboard = new Keyboard();
             ScreenData = new byte[screenHeight * screenWidth];
             sound = new SoundPlayer(@"assets\beep.wav");            
@@ -50,26 +50,26 @@ namespace Chip8WPF.Chip8Core
             ResetCPU();
             using (Stream fileStream = File.OpenRead(romPath))
             {
-                fileStream.Read(memory.Bytes, baseAddress, (int)fileStream.Length);
+                fileStream.Read(Memory.Bytes, baseAddress, (int)fileStream.Length);
             }
         }
 
         public void DecrementTimers()
         {
             // Delay and sound timers constantly decrease until they reach 0
-            if (delayTimer > 0)
+            if (DelayTimer > 0)
             {
-                delayTimer--;
+                DelayTimer--;
             }
 
-            if (soundTimer > 0)
+            if (SoundTimer > 0)
             {
                 // Only play when the sound timer is 1 to prevent stuttering
-                if (soundTimer == 1)
+                if (SoundTimer == 1)
                 {
                     sound.Play();
                 }                
-                soundTimer--;
+                SoundTimer--;
             }            
         }
 
@@ -116,10 +116,10 @@ namespace Chip8WPF.Chip8Core
 
         public ushort ReadNextOpCode()
         {            
-            ushort opCode = memory[programCounter];
+            ushort opCode = Memory[ProgramCounter];
             opCode <<= 8;
-            opCode |= memory[programCounter + 1];
-            programCounter += 2;
+            opCode |= Memory[ProgramCounter + 1];
+            ProgramCounter += 2;
             return opCode;
         }
 
@@ -243,20 +243,20 @@ namespace Chip8WPF.Chip8Core
         // Return from a subroutine
         private void OpCode00EE()
         {
-            programCounter = stack.Pop();            
+            ProgramCounter = Stack.Pop();            
         }
 
         // Jump to address at NNN
         private void OpCode1NNN(ushort opCode)
         {
-            programCounter = (ushort)(opCode & 0x0FFF);
+            ProgramCounter = (ushort)(opCode & 0x0FFF);
         }
 
         // Call subroutine at NNN
         private void OpCode2NNN(ushort opCode)
         {
-            stack.Push(programCounter);
-            programCounter = (ushort)(opCode & 0x0FFF);
+            Stack.Push(ProgramCounter);
+            ProgramCounter = (ushort)(opCode & 0x0FFF);
         }
 
         // Skip the next instruction if VX equals NN
@@ -264,9 +264,9 @@ namespace Chip8WPF.Chip8Core
         {
             int registerX = (opCode & 0x0F00) >> 8;
             byte value = (byte)(opCode & 0x00FF);
-            if (registers[registerX] == value)
+            if (Registers[registerX] == value)
             {
-                programCounter += 2;
+                ProgramCounter += 2;
             }
         }
 
@@ -275,9 +275,9 @@ namespace Chip8WPF.Chip8Core
         {
             int registerX = (opCode & 0x0F00) >> 8;
             int value = opCode & 0x00FF;
-            if (registers[registerX] != value)
+            if (Registers[registerX] != value)
             {
-                programCounter += 2;
+                ProgramCounter += 2;
             }
         }
 
@@ -286,9 +286,9 @@ namespace Chip8WPF.Chip8Core
         {
             int registerX = (opCode & 0x0F00) >> 8;
             int registerY = (opCode & 0x00F0) >> 4;
-            if (registers[registerX] == registers[registerY])
+            if (Registers[registerX] == Registers[registerY])
             {
-                programCounter += 2;
+                ProgramCounter += 2;
             }
         }
 
@@ -297,7 +297,7 @@ namespace Chip8WPF.Chip8Core
         {
             int registerX = (opCode & 0x0F00) >> 8;
             byte value = (byte)(opCode & 0x00FF);
-            registers[registerX] = value;
+            Registers[registerX] = value;
         }
 
         // Adds NN to VX
@@ -305,7 +305,7 @@ namespace Chip8WPF.Chip8Core
         {
             int registerX = (opCode & 0x0F00) >> 8;
             byte value = (byte)(opCode & 0x00FF);
-            registers[registerX] += value;
+            Registers[registerX] += value;
         }
 
         // Sets VX to the value of VY
@@ -313,7 +313,7 @@ namespace Chip8WPF.Chip8Core
         {
             int registerX = (opCode & 0x0F00) >> 8;
             int registerY = (opCode & 0x00F0) >> 4;
-            registers[registerX] = registers[registerY];
+            Registers[registerX] = Registers[registerY];
         }
 
         // Sets VX to VX bitwise OR VY
@@ -321,7 +321,7 @@ namespace Chip8WPF.Chip8Core
         {
             int registerX = (opCode & 0x0F00) >> 8;
             int registerY = (opCode & 0x00F0) >> 4;
-            registers[registerX] |= registers[registerY];
+            Registers[registerX] |= Registers[registerY];
         }
 
         // Sets VX to VX bitwise AND VY
@@ -329,7 +329,7 @@ namespace Chip8WPF.Chip8Core
         {
             int registerX = (opCode & 0x0F00) >> 8;
             int registerY = (opCode & 0x00F0) >> 4;
-            registers[registerX] &= registers[registerY];
+            Registers[registerX] &= Registers[registerY];
         }
 
         // Sets VX to VX bitwise XOR VY
@@ -337,7 +337,7 @@ namespace Chip8WPF.Chip8Core
         {
             int registerX = (opCode & 0x0F00) >> 8;
             int registerY = (opCode & 0x00F0) >> 4;
-            registers[registerX] ^= registers[registerY];
+            Registers[registerX] ^= Registers[registerY];
         }
 
         // Adds VY to VX. VF is set to 1 when there's a carry, and to 0 when there isn't
@@ -346,15 +346,15 @@ namespace Chip8WPF.Chip8Core
             int registerX = (opCode & 0x0F00) >> 8;
             int registerY = (opCode & 0x00F0) >> 4;            
             
-            registers[0xF] = 0;
-            int result = registers[registerX] + registers[registerY];
+            Registers[0xF] = 0;
+            int result = Registers[registerX] + Registers[registerY];
 
             if (result > 255)
             {
-                registers[0xF] = 1;
+                Registers[0xF] = 1;
             }
 
-            registers[registerX] += registers[registerY];
+            Registers[registerX] += Registers[registerY];
         }
 
         // VY is subtracted from VX. VF is set to 0 when there's a borrow, and 1 when there isn't
@@ -363,22 +363,22 @@ namespace Chip8WPF.Chip8Core
             int registerX = (opCode & 0x0F00) >> 8;
             int registerY = (opCode & 0x00F0) >> 4;
 
-            registers[0xF] = 1;
-            if (registers[registerX] < registers[registerY])
+            Registers[0xF] = 1;
+            if (Registers[registerX] < Registers[registerY])
             {
-                registers[0xF] = 0;
+                Registers[0xF] = 0;
             }
 
-            registers[registerX] -= registers[registerY];
+            Registers[registerX] -= Registers[registerY];
         }
 
         // Shifts VX right by one. VF is set to the value of the least significant bit of VX before the shift
         private void OpCode8XY6(ushort opCode)
         {
             int registerX = (opCode & 0x0F00) >> 8;
-            int lsb = registers[registerX] & 0x1;
-            registers[0xF] = (byte)lsb;
-            registers[registerX] >>= 1;            
+            int lsb = Registers[registerX] & 0x1;
+            Registers[0xF] = (byte)lsb;
+            Registers[registerX] >>= 1;            
         }
 
         // Sets VX to VY minus VX. VF is set to 0 when there's a borrow, and 1 when there isn't
@@ -387,22 +387,22 @@ namespace Chip8WPF.Chip8Core
             int registerX = (opCode & 0x0F00) >> 8;
             int registerY = (opCode & 0x00F0) >> 4;
 
-            registers[0xF] = 1;
-            if (registers[registerY] < registers[registerX])
+            Registers[0xF] = 1;
+            if (Registers[registerY] < Registers[registerX])
             {
-                registers[0xF] = 0;
+                Registers[0xF] = 0;
             }
 
-            registers[registerX] = (byte)(registers[registerY] - registers[registerX]);
+            Registers[registerX] = (byte)(Registers[registerY] - Registers[registerX]);
         }
 
         // Shifts VX left by one. VF is set to the value of the most significant bit of VX before the shift
         private void OpCode8XYE(ushort opCode)
         {
             int registerX = (opCode & 0x0F00) >> 8;
-            int msb = registers[registerX] >> 7;
-            registers[0xF] = (byte)msb;
-            registers[registerX] <<= 1;  
+            int msb = Registers[registerX] >> 7;
+            Registers[0xF] = (byte)msb;
+            Registers[registerX] <<= 1;  
         }
 
         // Skips the next instruction if VX doesn't equal VY
@@ -410,23 +410,23 @@ namespace Chip8WPF.Chip8Core
         {
             int registerX = (opCode & 0x0F00) >> 8;
             int registerY = (opCode & 0x00F0) >> 4;
-            if (registers[registerX] != registers[registerY])
+            if (Registers[registerX] != Registers[registerY])
             {
-                programCounter += 2;
+                ProgramCounter += 2;
             }
         }
 
         // Sets I to the address NNN
         private void OpCodeANNN(ushort opCode)
         {
-            instructionAddress = (ushort)(opCode & 0x0FFF);
+            InstructionAddress = (ushort)(opCode & 0x0FFF);
         }
 
         // Jumps to the address NNN plus V0
         private void OpCodeBNNN(ushort opCode)
         {
             int address = opCode & 0x0FFF;
-            programCounter = (ushort)(address + registers[0x0]);
+            ProgramCounter = (ushort)(address + Registers[0x0]);
         }
 
         // Sets VX to a random number and NN
@@ -435,7 +435,7 @@ namespace Chip8WPF.Chip8Core
             int registerX = (opCode & 0x0F00) >> 8;
             int value = (opCode & 0x00FF);
             Random random = new Random();
-            registers[registerX] = (byte)(random.Next() & value);
+            Registers[registerX] = (byte)(random.Next() & value);
         }
 
         /*
@@ -453,15 +453,15 @@ namespace Chip8WPF.Chip8Core
             int registerX = (opCode & 0x0F00) >> 8;
             int registerY = (opCode & 0x00F0) >> 4;            
             
-            int startingPointX = registers[registerX];
-            int startingPointY = registers[registerY];
-            registers[0xF] = 0;            
+            int startingPointX = Registers[registerX];
+            int startingPointY = Registers[registerY];
+            Registers[0xF] = 0;            
             
             // N pixels high
             int height = opCode & 0x000F;
             for (int line = 0; line < height; line++, startingPointY++)
             {
-                byte spriteData = memory[instructionAddress + line];
+                byte spriteData = Memory[InstructionAddress + line];
                 int screenIndex = Convert2dTo1d(startingPointX, startingPointY);
 
                 // 8 pixels/bits wide; we're starting from the most significant bit
@@ -477,7 +477,7 @@ namespace Chip8WPF.Chip8Core
 
                     // VF is set to 1 if any screen pixels are toggled from set to unset
                     if (ScreenData[screenIndex] == 255 && color == 255)                       
-                        registers[0xF] = 1;
+                        Registers[0xF] = 1;
 
                     ScreenData[screenIndex] ^= color;
                 }
@@ -488,10 +488,10 @@ namespace Chip8WPF.Chip8Core
         private void OpCodeEX9E(ushort opCode)
         {
             int registerX = (opCode & 0x0F00) >> 8;
-            int key = registers[registerX];
+            int key = Registers[registerX];
             if (Keyboard.IsKeyPressed(key))
             {
-                programCounter += 2;
+                ProgramCounter += 2;
             }
         }
 
@@ -499,10 +499,10 @@ namespace Chip8WPF.Chip8Core
         private void OpCodeEXA1(ushort opCode)
         {
             int registerX = (opCode & 0x0F00) >> 8;
-            int key = registers[registerX];
+            int key = Registers[registerX];
             if (!Keyboard.IsKeyPressed(key))
             {
-                programCounter += 2;
+                ProgramCounter += 2;
             }
         }
 
@@ -510,7 +510,7 @@ namespace Chip8WPF.Chip8Core
         private void OpCodeFX07(ushort opCode)
         {
             int registerX = (opCode & 0x0F00) >> 8;
-            registers[registerX] = delayTimer;
+            Registers[registerX] = DelayTimer;
         }
 
         // A key press is awaited, and then stored in VX
@@ -523,11 +523,11 @@ namespace Chip8WPF.Chip8Core
                 // This is done to prevent the thread from potentially hanging
                 // with a while(true) loop. By setting the program counter
                 // back, it will just repeat the same instruction.
-                programCounter -= 2;
+                ProgramCounter -= 2;
             }
             else
             {
-                registers[registerX] = (byte)key;
+                Registers[registerX] = (byte)key;
             }            
         }
 
@@ -535,21 +535,21 @@ namespace Chip8WPF.Chip8Core
         private void OpCodeFX15(ushort opCode)
         {
             int registerX = (opCode & 0x0F00) >> 8;
-            delayTimer = registers[registerX];
+            DelayTimer = Registers[registerX];
         }
 
         // Sets the sound timer to VX
         private void OpCodeFX18(ushort opCode)
         {
             int registerX = (opCode & 0x0F00) >> 8;
-            soundTimer = registers[registerX];
+            SoundTimer = Registers[registerX];
         }
 
         // Adds VX to I
         private void OpCodeFX1E(ushort opCode)
         {
             int registerX = (opCode & 0x0F00) >> 8;
-            instructionAddress += registers[registerX];
+            InstructionAddress += Registers[registerX];
         }
 
         // Sets I to the location of the sprite for the character in VX. Characters 0-F 
@@ -557,7 +557,7 @@ namespace Chip8WPF.Chip8Core
         private void OpCodeFX29(ushort opCode)
         {
             int registerX = (opCode & 0x0F00) >> 8;
-            instructionAddress = (ushort)(registers[registerX] * 5);
+            InstructionAddress = (ushort)(Registers[registerX] * 5);
         }
 
         /*
@@ -570,15 +570,15 @@ namespace Chip8WPF.Chip8Core
         private void OpCodeFX33(ushort opCode)
         {
             int registerX = (opCode & 0x0F00) >> 8;
-            byte decimalValue = registers[registerX];
+            byte decimalValue = Registers[registerX];
 
             byte hundreds = (byte)(decimalValue / 100);
             byte tens = (byte)((decimalValue / 10) % 10);
             byte ones = (byte)(decimalValue % 10);
 
-            memory[instructionAddress] = hundreds;
-            memory[instructionAddress + 1] = tens;
-            memory[instructionAddress + 2] = ones;
+            Memory[InstructionAddress] = hundreds;
+            Memory[InstructionAddress + 1] = tens;
+            Memory[InstructionAddress + 2] = ones;
         }
 
         // Stores V0 to VX in memory starting at address I
@@ -587,10 +587,10 @@ namespace Chip8WPF.Chip8Core
             int registerX = (opCode & 0x0F00) >> 8;
             for (int i = 0; i <= registerX; i++)
             {
-                memory[instructionAddress + i] = registers[i];                
+                Memory[InstructionAddress + i] = Registers[i];                
             }
 
-            instructionAddress = (ushort)(instructionAddress + registerX + 1);
+            InstructionAddress = (ushort)(InstructionAddress + registerX + 1);
         }
 
         // Fills V0 to VX with values from memory starting at address I
@@ -599,10 +599,10 @@ namespace Chip8WPF.Chip8Core
             int registerX = (opCode & 0x0F00) >> 8;
             for (int i = 0; i <= registerX; i++)
             {
-                registers[i] = memory[instructionAddress + i];
+                Registers[i] = Memory[InstructionAddress + i];
             }
 
-            instructionAddress = (ushort)(instructionAddress + registerX + 1);
+            InstructionAddress = (ushort)(InstructionAddress + registerX + 1);
         }
 
         #endregion

@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Chip8WPF.Chip8Core;
+using NUnit.Framework;
 
-namespace Chip8WPF.Chip8Core
+namespace Chip8Tests
 {
-    [Serializable]
-    public class Memory
+    [TestFixture]
+    public class MemoryTests
     {
-        // http://mattmik.com/chip8.html contains information regarding fonts
+        private Memory memory;
         private static readonly byte[] fonts =
         {
             0xF0, 0x90, 0x90, 0x90, 0xF0,   // 0
@@ -25,20 +26,15 @@ namespace Chip8WPF.Chip8Core
             0xF0, 0x80, 0xF0, 0x80, 0xF0,   // E
             0xF0, 0x80, 0xF0, 0x80, 0x80    // F
         };
-
-        public byte[] Bytes { get; private set; }
-
-        public Memory()
+        
+        [Test]
+        public void Constructor_InitializesFontData()
         {
-            // Chip8 memory is 4 KiB
-            Bytes = new byte[4096];
-            Array.Copy(fonts, Bytes, fonts.Length);
-        }
-
-        public byte this[int index]
-        {
-            get { return Bytes[index]; }
-            set { Bytes[index] = value; }
+            memory = new Memory();
+            for (int i = 0; i < fonts.Length; i++)
+            {
+                Assert.That(memory[i], Is.EqualTo(fonts[i]));
+            }
         }
     }
 }
