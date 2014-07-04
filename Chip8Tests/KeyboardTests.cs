@@ -45,6 +45,7 @@ namespace Chip8Tests
         public void GetAnyKey_InitialConstruction_NegativeOne()
         {
             int keyPressed = keyboard.GetAnyKey();
+
             Assert.That(keyPressed, Is.EqualTo(-1));
         }
 
@@ -53,6 +54,7 @@ namespace Chip8Tests
         {
             keyboard.KeyDown(Key.P);
             int keyPressed = keyboard.GetAnyKey();
+
             Assert.That(keyPressed, Is.EqualTo(-1));
         }
 
@@ -61,6 +63,7 @@ namespace Chip8Tests
         {
             keyboard.KeyUp(Key.P);
             int keyPressed = keyboard.GetAnyKey();
+
             Assert.That(keyPressed, Is.EqualTo(-1));
         }
 
@@ -71,10 +74,12 @@ namespace Chip8Tests
             {
                 keyboard.KeyDown(pair.Key);
                 bool keyPressed = keyboard.IsKeyPressed(pair.Value);
+
                 Assert.That(keyPressed, Is.True);
 
                 keyboard.KeyUp(pair.Key);
                 keyPressed = keyboard.IsKeyPressed(pair.Value);
+
                 Assert.That(keyPressed, Is.False);
             }
         }        
@@ -83,6 +88,7 @@ namespace Chip8Tests
         public void IsKeyPressed_InputLessThanZero_False()
         {
             bool keyPressed = keyboard.IsKeyPressed(-1);
+
             Assert.That(keyPressed, Is.False);
         }
 
@@ -90,6 +96,7 @@ namespace Chip8Tests
         public void IsKeyPressed_InputGreaterThanKeyCount_False()
         {
             bool keyPressed = keyboard.IsKeyPressed(18);
+
             Assert.That(keyPressed, Is.False);
         }
     }

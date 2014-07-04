@@ -435,7 +435,7 @@ namespace Chip8WPF.Chip8Core
             int registerX = (opCode & 0x0F00) >> 8;
             int value = (opCode & 0x00FF);
             Random random = new Random();
-            Registers[registerX] = (byte)(random.Next() & value);
+            Registers[registerX] = (byte)(random.Next(256) & value);
         }
 
         /*
