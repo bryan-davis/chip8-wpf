@@ -70,16 +70,18 @@ namespace Chip8WPF.Chip8System
             frameRateLimiter.Start();
             double microsecondsPerTick = (1000.0 * 1000.0) / Stopwatch.Frequency;
 
-            Stop = false;            
+            Stop = false;
             while (!Stop)
             {
-                double elapsedTime = frameRateLimiter.ElapsedTicks * microsecondsPerTick;
-                if (elapsedTime >= microsecondsPerFrame)
+                frameRateLimiter.Restart();
+                UpdateFrame();
+                Render();
+
+                double elapsedTime;
+                do
                 {
-                    UpdateFrame();
-                    Render();
-                    frameRateLimiter.Restart();
-                }
+                    elapsedTime = frameRateLimiter.ElapsedTicks * microsecondsPerTick;
+                } while (elapsedTime < microsecondsPerFrame);
             }
         }        
 
